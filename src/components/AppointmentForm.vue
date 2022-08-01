@@ -1,7 +1,7 @@
 <template>
   <form
     @submit.prevent="formHandler"
-    class="p-5 m-auto w-1/2 mt-5 rounded-lg overflow-hidden shadow-3xl shadow-teal-500"
+    class="p-5 m-auto w-1/2 mt-5 rounded-lg overflow-hidden shadow-sm shadow-teal-500"
   >
     <legend class="text-2xl mb-5">Appointment</legend>
     <div class="w-full mb-5 text-center">
@@ -38,21 +38,58 @@
       Fix Appointment
     </button>
   </form>
+
+  <AppointmentTable :appointments="appointments"/>
 </template>
 
 <script>
+import AppointmentTable from "@/components/AppointmentTable.vue";
+
 export default {
   name: "AppointmentFrom",
+  components: { AppointmentTable },
   data() {
     return {
       details: "",
       startDt: "",
       endDt: "",
+      appointments: [],
     };
   },
   methods: {
     formHandler() {
-      console.log(this.details, this.startDt, this.endDt);
+      let obj = {
+        details: this.details,
+        startDt: new Date(this.startDt),
+        endDt: new Date(this.endDt),
+      };
+
+      this.appointments.push(obj);
+      this.appointments.sort((a, b) => a.startDt - b.startDt);
+      // console.log(this.appointments);
+      for (let i = 0; i < this.appointments.length - 1; i++) {
+        if (
+          this.appointments[i].startDt === this.appointments[i + 1].startDt ||
+          this.appointments[i + 1].startDt < this.appointments[i].endDt
+        ) {
+          if (this.appointments[i].endDt > this.appointments[i + 1].endDt) {
+            let ElIndex = i + 1;
+            let count = 1;
+            while (
+              this.appointments[i].endDt !==
+                this.appointments[ElIndex].startDt &&
+              this.appointments[i].endDt > this.appointments[ElIndex].endDt
+            ) {
+              count++;
+              ElIndex++;
+            }
+            this.appointments.splice(i+1, count);
+          } else {
+            this.appointments.shift();
+          }
+        }
+      }
+      // console.log(this.appointments);
     },
   },
 };
